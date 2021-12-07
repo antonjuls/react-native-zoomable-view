@@ -126,6 +126,8 @@ class ReactNativeZoomableView extends Component<
           this._getZoomableViewEventObject()
         ),
       onShouldBlockNativeResponder: () => false,
+      onMoveShouldSetPanResponderCapture: (e, { dx, dy }) =>
+        Math.abs(dx) > 10 || Math.abs(dy) > 10,
     });
 
     this.zoomSubjectWrapperRef = createRef<View>();
@@ -720,14 +722,14 @@ class ReactNativeZoomableView extends Component<
    * @param {number} newOffsetX
    * @param {number} newOffsetY
    * @param {() => void)} callback
-   * @param {boolean} withAnimation
+   * @param {number} withZoom
    * @returns
    */
   _setNewOffsetPosition(
     newOffsetX: number,
     newOffsetY: number,
     callback: () => void = null,
-    withAnimation: boolean = false
+    withZoom?: number
   ) {
     const { onShiftingBefore, onShiftingAfter } = this.props;
 
@@ -738,13 +740,13 @@ class ReactNativeZoomableView extends Component<
     this.offsetX = newOffsetX;
     this.offsetY = newOffsetY;
 
-    if (withAnimation) {
+    if (withZoom) {
       Animated.parallel([
         getZoomToAnimation(this.panAnim.x, newOffsetX),
         getZoomToAnimation(this.panAnim.y, newOffsetY),
       ]).start();
       setTimeout(() => {
-        getZoomToAnimation(this.zoomAnim, 1).start();
+        getZoomToAnimation(this.zoomAnim, withZoom || 1).start();
       }, 0);
     } else {
       this.panAnim.setValue({ x: this.offsetX, y: this.offsetY });
@@ -978,26 +980,21 @@ class ReactNativeZoomableView extends Component<
    *
    * @param {number} newOffsetX the new position we want to move it to (x-axis)
    * @param {number} newOffsetY the new position we want to move it to (y-axis)
-   * @param {boolean} withAnimation either animate movement or not. default to false
+   * @param {number} withZoom the new zoom
    *
    * @return {Promise<bool>}
    */
   moveTo(
     newOffsetX: number,
     newOffsetY: number,
-    withAnimation: boolean = false
+    withZoom: number
   ): Promise<void> {
     // const { originalWidth, originalHeight } = this.state;
     // const offsetX = (newOffsetX - originalWidth / 2) / this.zoomLevel;
     // const offsetY = (newOffsetY - originalHeight / 2) / this.zoomLevel;
 
     return new Promise((resolve) => {
-      this._setNewOffsetPosition(
-        -newOffsetX,
-        -newOffsetY,
-        resolve,
-        withAnimation
-      );
+      this._setNewOffsetPosition(-newOffsetX, -newOffsetY, resolve, withZoom);
     });
   }
 
