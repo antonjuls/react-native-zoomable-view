@@ -722,14 +722,12 @@ class ReactNativeZoomableView extends Component<
    * @param {number} newOffsetX
    * @param {number} newOffsetY
    * @param {() => void)} callback
-   * @param {number} withZoom
    * @returns
    */
   _setNewOffsetPosition(
     newOffsetX: number,
     newOffsetY: number,
-    callback: () => void = null,
-    withZoom?: number
+    callback: () => void = null
   ) {
     const { onShiftingBefore, onShiftingAfter } = this.props;
 
@@ -740,17 +738,7 @@ class ReactNativeZoomableView extends Component<
     this.offsetX = newOffsetX;
     this.offsetY = newOffsetY;
 
-    if (withZoom) {
-      Animated.parallel([
-        getZoomToAnimation(this.panAnim.x, newOffsetX),
-        getZoomToAnimation(this.panAnim.y, newOffsetY),
-      ]).start();
-      setTimeout(() => {
-        getZoomToAnimation(this.zoomAnim, withZoom || 1).start();
-      }, 0);
-    } else {
-      this.panAnim.setValue({ x: this.offsetX, y: this.offsetY });
-    }
+    this.panAnim.setValue({ x: this.offsetX, y: this.offsetY });
 
     this.zoomAnim.setValue(this.zoomLevel);
 
@@ -980,21 +968,16 @@ class ReactNativeZoomableView extends Component<
    *
    * @param {number} newOffsetX the new position we want to move it to (x-axis)
    * @param {number} newOffsetY the new position we want to move it to (y-axis)
-   * @param {number} withZoom the new zoom
    *
    * @return {Promise<bool>}
    */
-  moveTo(
-    newOffsetX: number,
-    newOffsetY: number,
-    withZoom: number
-  ): Promise<void> {
+  moveTo(newOffsetX: number, newOffsetY: number): Promise<void> {
     // const { originalWidth, originalHeight } = this.state;
     // const offsetX = (newOffsetX - originalWidth / 2) / this.zoomLevel;
     // const offsetY = (newOffsetY - originalHeight / 2) / this.zoomLevel;
 
     return new Promise((resolve) => {
-      this._setNewOffsetPosition(-newOffsetX, -newOffsetY, resolve, withZoom);
+      this._setNewOffsetPosition(-newOffsetX, -newOffsetY, resolve);
     });
   }
 
@@ -1016,6 +999,23 @@ class ReactNativeZoomableView extends Component<
 
     return new Promise((resolve) => {
       this._setNewOffsetPosition(offsetX, offsetY, resolve);
+    });
+  }
+
+  centerAndZoom(newZoom: number, withAnimation: boolean = true): Promise<void> {
+    return new Promise((resolve) => {
+      if (withAnimation) {
+        Animated.sequence([
+          Animated.parallel([
+            getZoomToAnimation(this.panAnim.x, 0),
+            getZoomToAnimation(this.panAnim.y, 0),
+          ]),
+          getZoomToAnimation(this.zoomAnim, newZoom || 1),
+        ]).start(() => resolve());
+      } else {
+        this.panAnim.setValue({ x: 0, y: 0 });
+        this.zoomAnim.setValue(newZoom);
+      }
     });
   }
 
