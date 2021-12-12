@@ -18,15 +18,20 @@ export function getPanMomentumDecayAnim(
 ) {
   return Animated.decay(animValue, {
     velocity,
-    deceleration: 0.994,
+    deceleration: 0.99,
     useNativeDriver: true,
   });
 }
 
-export function getZoomToAnimation(animValue: Animated.Value, toValue: number) {
+export function getZoomToAnimation(
+  animValue: Animated.Value,
+  toValue: number,
+  duration: number = 500
+) {
   return Animated.timing(animValue, {
     easing: Easing.out(Easing.ease),
     toValue,
     useNativeDriver: true,
+    duration: duration,
   });
 }
