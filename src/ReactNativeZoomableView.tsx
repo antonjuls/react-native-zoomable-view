@@ -991,7 +991,10 @@ class ReactNativeZoomableView extends Component<
     return this._setNewOffsetPosition(offsetX, offsetY);
   }
 
-  centerAndZoom(newZoom: number, withAnimation: boolean = true): Promise<void> {
+  centerAndZoom(
+    newZoom: number = 1,
+    withAnimation: boolean = true
+  ): Promise<void> {
     return new Promise((resolve) => {
       if (withAnimation) {
         Animated.sequence([
@@ -999,7 +1002,7 @@ class ReactNativeZoomableView extends Component<
             getZoomToAnimation(this.panAnim.x, 0, 200),
             getZoomToAnimation(this.panAnim.y, 0, 200),
           ]),
-          getZoomToAnimation(this.zoomAnim, newZoom || 1, 400),
+          getZoomToAnimation(this.zoomAnim, newZoom, 400),
         ]).start(() => resolve());
       } else {
         this.panAnim.setValue({ x: 0, y: 0 });
