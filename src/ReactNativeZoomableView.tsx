@@ -999,10 +999,10 @@ class ReactNativeZoomableView extends Component<
       if (withAnimation) {
         Animated.sequence([
           Animated.parallel([
-            getZoomToAnimation(this.panAnim.x, 0, 200),
-            getZoomToAnimation(this.panAnim.y, 0, 200),
+            getZoomToAnimation(this.panAnim.x, 0, 300),
+            getZoomToAnimation(this.panAnim.y, 0, 300),
           ]),
-          getZoomToAnimation(this.zoomAnim, newZoom, 400),
+          getZoomToAnimation(this.zoomAnim, newZoom, 300),
         ]).start(() => resolve());
       } else {
         this.panAnim.setValue({ x: 0, y: 0 });
